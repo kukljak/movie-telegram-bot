@@ -4,8 +4,8 @@ const Users = require('../db/models/Users');
 const User = require('../db/models/Users');
 const { enter, leave } = Scenes.Stage;
 
-const introduceScene = () => {
-    const currentScene = new Scenes.BaseScene('introduceScene');
+const recordViewedFilm = () => {
+    const currentScene = new Scenes.BaseScene('recordViewedFilm');
     currentScene.enter((ctx) => ctx.reply("Вкажіть назву переглянутого фільму ?"));
     currentScene.on('text', async (ctx) => {
         const profile_id = ctx.session.__scenes.state.profile_id;
@@ -32,4 +32,4 @@ const introduceScene = () => {
     return currentScene;
 }
 
-module.exports = introduceScene();
+module.exports = recordViewedFilm();

@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { Scenes, session, Telegraf, Markup } = require('telegraf');
-const introduceScene = require('./botScenes/introduceScene');
+const recordViewedFilm = require('./botScenes/recordViewedFilm');
 const connectDB = require('./db/index');
 const Users = require('./db/models/Users');
 const Chats = require('./db/models/Chats');
@@ -12,7 +12,7 @@ connectDB();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const stage = new Scenes.Stage([introduceScene]);
+const stage = new Scenes.Stage([recordViewedFilm]);
 let profile_id ;
 let profileExist;
 let profileInfo;
@@ -51,7 +51,7 @@ bot.action('writeMovie', async (ctx) => {
     const profile = await getProfile(ctx);
     profile_id = profile._id;
     
-    await ctx.scene.enter('introduceScene', {profile_id: profile_id});
+    await ctx.scene.enter('recordViewedFilm', {profile_id: profile_id});
 });
 
 bot.action('showMovies', async (ctx) => {
