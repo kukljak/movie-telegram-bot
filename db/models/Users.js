@@ -29,6 +29,9 @@ const UserSchema = new mongoose.Schema({
             name: {
                 type: String
             },
+            vote: {
+                type: Number
+            },
             timeAdd: {
                 type: Date
             }

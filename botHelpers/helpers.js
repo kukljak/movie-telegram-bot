@@ -7,6 +7,15 @@ const getProfile = async (context) => {
     return profile;
 }
 
+const getVoteToString = (vote) => {
+    let rating = '';
+    for(let i = 0; i < vote; i++) {
+        rating = rating + '⭐️';
+    }
+    return rating;
+}
+
 module.exports = {
-    getProfile
+    getProfile,
+    getVoteToString
 }

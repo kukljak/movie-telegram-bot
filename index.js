@@ -1,18 +1,18 @@
 require('dotenv').config();
 const { Scenes, session, Telegraf, Markup } = require('telegraf');
-const introduceScene = require('./botScenes/introduceScene');
+const recordViewedFilm = require('./botScenes/recordViewedFilm');
 const connectDB = require('./db/index');
 const Users = require('./db/models/Users');
 const Chats = require('./db/models/Chats');
 const Profiles = require('./db/models/Profiles');
-const { getProfile } = require('./botHelpers/helpers');
+const { getProfile, getVoteToString } = require('./botHelpers/helpers');
 
 
 connectDB();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const stage = new Scenes.Stage([introduceScene]);
+const stage = new Scenes.Stage([recordViewedFilm]);
 let profile_id ;
 let profileExist;
 let profileInfo;
@@ -22,7 +22,7 @@ bot.use(session());
 bot.use(stage.middleware());
 
 bot.start( async (ctx) => {
-    ctx.reply(`Привіт ${ctx.from.first_name}! Це твій персональний менеджер для фільмів. \n Обери одну з наступних дій`, Markup.inlineKeyboard([
+    ctx.reply(`Привіт ${ctx.from.first_name}! Це твій персональний менеджер для фільмів. \nРазом з ним, ти можеш створити список переглянутих фільмів, оцінити його та вивести список в чат \n\nОбери одну з наступних дій`, Markup.inlineKeyboard([
         Markup.button.callback('Переглянуті фільми','showMovies'),
         Markup.button.callback('Додати переглянутий фільм', 'writeMovie')
     ]));
@@ -51,7 +51,7 @@ bot.action('writeMovie', async (ctx) => {
     const profile = await getProfile(ctx);
     profile_id = profile._id;
     
-    await ctx.scene.enter('introduceScene', {profile_id: profile_id});
+    await ctx.scene.enter('recordViewedFilm', {profile_id: profile_id});
 });
 
 bot.action('showMovies', async (ctx) => {
@@ -60,9 +60,12 @@ bot.action('showMovies', async (ctx) => {
     
     const { user } = await Profiles.findById(profile_id).populate('user');
     let moviesList = '';
-    user.movies.map( (film,index) => moviesList = moviesList.concat('\n',`${index+1}. `,film.name));
+    user.movies.map( (film,index) => {
+        let rating = getVoteToString(film.vote);
+        moviesList = moviesList.concat('\n',`${index+1}. `,film.name, '\n', rating, '\n');
+    });
 
-    ctx.reply(moviesList);
+    await ctx.reply(moviesList);
 });
 
 

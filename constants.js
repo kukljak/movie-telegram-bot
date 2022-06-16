@@ -1,5 +1,5 @@
 const commands = `
-/start - Restart bot
+/start - Start bot
 /help - Help with bot
 `
 
