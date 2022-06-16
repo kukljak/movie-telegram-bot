@@ -62,7 +62,7 @@ bot.action('showMovies', async (ctx) => {
     let moviesList = '';
     user.movies.map( (film,index) => {
         let rating = getVoteToString(film.vote);
-        moviesList = moviesList.concat('\n',`${index+1}. `,film.name, '\n', rating, '\n');
+        moviesList = moviesList.concat('\n',`${index+1}. `,film.name, '\n', rating);
     });
 
     await ctx.reply(moviesList);
