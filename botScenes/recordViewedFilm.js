@@ -10,8 +10,13 @@ const recordViewedFilm = () => {
     let profile_id;
     let film;
     
-    const movieNameHandler = Telegraf.on('text', async (ctx) => {
+    const movieNameHandler = Telegraf.on('message', async (ctx) => {
         try {
+            if (!/[^A-Za-z0-9]+/.test(ctx.message.text)) {
+                ctx.reply('Це не назва фільму. Прохання ввести назву фільму')
+                
+                return await ctx.wizard.selectStep(0);
+            }
             profile_id = ctx.scene.state.profile_id;
             profile = await Profiles.findById(profile_id).populate('user');
 
@@ -28,7 +33,7 @@ const recordViewedFilm = () => {
         }
     });
 
-    const movieVoteHandler = Telegraf.on('text', async (ctx) => {
+    const movieVoteHandler = Telegraf.on('message', async (ctx) => {
         try {
             if (/^([1-9]|10)$/.test(ctx.message.text)) {
                 film.vote = ctx.message.text;
@@ -38,7 +43,7 @@ const recordViewedFilm = () => {
     
                 ctx.scene.leave();
             } else {
-                await ctx.reply('Оцініть даний фільм цифрами від 1 до 10');
+                await ctx.reply('Потрібно оцінити фільм цифрами від 1 до 10');
             }
 
             await ctx.wizard.selectStep(1);

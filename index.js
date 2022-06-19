@@ -1,6 +1,8 @@
 require('dotenv').config();
 const { Scenes, session, Telegraf, Markup } = require('telegraf');
 const recordViewedFilm = require('./botScenes/recordViewedFilm');
+const deleteViewedFilm = require('./botScenes/deleteViewedFilm');
+const editViewedFilm = require('./botScenes/editViewedFilm');
 const connectDB = require('./db/index');
 const Users = require('./db/models/Users');
 const Chats = require('./db/models/Chats');
@@ -12,7 +14,7 @@ connectDB();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const stage = new Scenes.Stage([recordViewedFilm]);
+const stage = new Scenes.Stage([recordViewedFilm, deleteViewedFilm, editViewedFilm]);
 let profile_id ;
 let profileExist;
 let profileInfo;
@@ -71,7 +73,7 @@ bot.action('showMovies', async (ctx) => {
         let moviesList = '';
         user.movies.map( (film,index) => {
             let rating = getVoteToString(film.vote);
-            moviesList = moviesList.concat('\n',`${index+1}. `,film.name, '\n', rating);
+            moviesList = moviesList.concat('\n',`${index+1}. `,film.name, '\n', rating, `(${film.vote}/10)`);
         });
     
         await ctx.reply(moviesList);
@@ -80,7 +82,21 @@ bot.action('showMovies', async (ctx) => {
     }
 });
 
+bot.command('delete', async (ctx) => {
+    userInfo = await Users.findOne({id: ctx.message.from.id});
+    profileInfo = await Profiles.findOne({user: userInfo?._id});
+    profile_id = profileInfo._id;
 
+    await ctx.scene.enter('deleteViewedFilm', {profile_id: profile_id});
+});
+
+bot.command('edit', async (ctx) => {
+    userInfo = await Users.findOne({id: ctx.message.from.id});
+    profileInfo = await Profiles.findOne({user: userInfo?._id});
+    profile_id = profileInfo._id;
+
+    await ctx.scene.enter('editViewedFilm', {profile_id: profile_id});
+});
 
 
 bot.launch();
