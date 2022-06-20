@@ -98,6 +98,9 @@ bot.command('edit', async (ctx) => {
     await ctx.scene.enter('editViewedFilm', {profile_id: profile_id});
 });
 
+bot.command('restart', async (ctx) => {
+    await ctx.scene.leave();
+})
 
 bot.launch();
 
