@@ -16,6 +16,8 @@ const recordViewedFilm = () => {
                 ctx.reply('Це не назва фільму. Прохання ввести назву фільму')
                 
                 return await ctx.wizard.selectStep(0);
+            } else if (ctx.message.text && ctx.message.text.includes('/')) {
+                return await ctx.reply('Введіть назва фільму а не команду.')
             }
             profile_id = ctx.scene.state.profile_id;
             profile = await Profiles.findById(profile_id).populate('user');

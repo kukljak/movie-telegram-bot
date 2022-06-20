@@ -11,7 +11,7 @@ const deleteViewedFilm = () => {
             const profile = await Profiles.findById(profile_id).populate('user');
 
             let films = await profile.user.movies;
-            if (/^[0-9]+$/.test(ctx.message.text) && ctx.message.text !== '0' && ctx.message.text < films.length) {
+            if (/^[0-9]+$/.test(ctx.message.text) && ctx.message.text !== '0' && ctx.message.text - 1 < films.length) {
                 const deletedFilm = films.find( (film, id) => id == ctx.message.text - 1);
 
                 films = films.filter( (film, id) => id !== ctx.message.text - 1 );

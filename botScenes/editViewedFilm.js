@@ -12,8 +12,8 @@ const editViewedFilm = () => {
             profile = await Profiles.findById(profile_id).populate('user');
 
             let films = await profile.user.movies;
-            if (/^[0-9]+$/.test(ctx.message.text) && ctx.message.text !== '0' && ctx.message.text < films.length) {
-                filmNumber = Number(ctx.message.text);
+            if (/^[0-9]+$/.test(ctx.message.text) && ctx.message.text !== '0' && ctx.message.text - 1 < films.length) {
+                filmNumber = Number(ctx.message.text) - 1;
                 filmToEdit = films.find( (film, id) => id == ctx.message.text - 1);
 
                 ctx.reply(`Вкажіть на яку назву бажаєте змінити фільм - '${filmToEdit.name}'`)
@@ -21,6 +21,8 @@ const editViewedFilm = () => {
             } else if (Number(ctx.message.text) > films.length || ctx.message.text === '0') {
                 ctx.reply('Такого номеру фільму немає, введіть будь ласка номер фільму згідно вашого списку');
                 await ctx.wizard.selectStep(0);
+            } else if (ctx.message.text && ctx.message.text.includes('/')) {
+                ctx.reply('Введіть номер фільму а не команду.')
             } else {
                 ctx.reply('Це не номер фільму, прохання ввести номер фільму');
                 await ctx.wizard.selectStep(0);
@@ -36,6 +38,8 @@ const editViewedFilm = () => {
             profile.user.movies[filmNumber].name = ctx.message.text;
             await ctx.reply('Оцініть даний фільм від 1 до 10');
             await ctx.wizard.next();
+        } else if (ctx.message.text && ctx.message.text.includes('/')) {
+            ctx.reply('Введіть назва фільму а не команду.')
         } else {
             ctx.reply('Це не назва фільму, введіть будь ласка назву фільму');
             await ctx.wizard.selectStep(1);
