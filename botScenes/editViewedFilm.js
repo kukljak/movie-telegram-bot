@@ -1,32 +1,42 @@
 const { Scenes, Telegraf } = require("telegraf");
+const { checkCtxType } = require("../botHelpers/helpers");
 const Profiles = require("../db/models/Profiles");
 
 const editViewedFilm = () => {
     let profile;
-    let filmToEdit;
-    let filmNumber;
-
+    let films;
     const takeMovieNumber = Telegraf.on('message', async (ctx) => {
         const profile_id = ctx.scene.state?.profile_id;
+        let sceneState = ctx.scene.state;
         try {
             profile = await Profiles.findById(profile_id).populate('user');
+            films = await profile.user.movies;
 
-            let films = await profile.user.movies;
-            if (/^[0-9]+$/.test(ctx.message.text) && ctx.message.text !== '0' && ctx.message.text - 1 < films.length) {
-                filmNumber = Number(ctx.message.text) - 1;
-                filmToEdit = films.find( (film, id) => id == ctx.message.text - 1);
+            switch (checkCtxType(ctx, films)) {
+                case 'number':
+                    sceneState.filmNumber = Number(ctx.message.text) - 1;
+                    sceneState.filmToEdit = films.find( (film, id) => id == ctx.message.text - 1);
 
-                ctx.reply(`Вкажіть на яку назву бажаєте змінити фільм - '${filmToEdit.name}'`)
-                await ctx.wizard.next();
-            } else if (Number(ctx.message.text) > films.length || ctx.message.text === '0') {
-                ctx.reply('Такого номеру фільму немає, введіть будь ласка номер фільму згідно вашого списку');
-                await ctx.wizard.selectStep(0);
-            } else if (ctx.message.text && ctx.message.text.includes('/')) {
-                ctx.reply('Введіть номер фільму а не команду.')
-            } else {
-                ctx.reply('Це не номер фільму, прохання ввести номер фільму');
-                await ctx.wizard.selectStep(0);
+                    ctx.reply(`Вкажіть на яку назву бажаєте змінити фільм - '${sceneState.filmToEdit.name}'`)
+                    await ctx.wizard.next();
+                    break;
+                case 'notExistNumber':
+                    ctx.reply('Такого номеру фільму немає, введіть будь ласка номер фільму згідно вашого списку');
+                    await ctx.wizard.selectStep(0);
+                    break;
+                case 'command':
+                    ctx.reply('Введіть номер фільму а не команду.');
+                    await ctx.wizard.selectStep(0);
+                    break;
+                case 'text':
+                case 'Other':
+                    ctx.reply('Це не номер фільму, прохання ввести номер фільму');
+                    await ctx.wizard.selectStep(0);
+                    break;
+                default:
+                    break;
             }
+
         } catch (error) {
             console.error(error);
         }
@@ -34,33 +44,40 @@ const editViewedFilm = () => {
     });
     
     const changeToNewName = Telegraf.on('message', async (ctx) => {
-        if (/[^A-Za-z0-9]+/.test(ctx.message.text)) {
-            profile.user.movies[filmNumber].name = ctx.message.text;
-            await ctx.reply('Оцініть даний фільм від 1 до 10');
-            await ctx.wizard.next();
-        } else if (ctx.message.text && ctx.message.text.includes('/')) {
-            ctx.reply('Введіть назва фільму а не команду.')
-        } else {
-            ctx.reply('Це не назва фільму, введіть будь ласка назву фільму');
-            await ctx.wizard.selectStep(1);
+
+        switch (checkCtxType(ctx, films)) {
+            case 'number':
+            case 'notExistNumber':
+            case 'text':
+                profile.user.movies[ctx.scene.state.filmNumber].name = ctx.message.text;
+                await ctx.reply('Оцініть даний фільм від 1 до 10');
+                await ctx.wizard.next();
+                break;
+            case 'command':
+                ctx.reply('Введіть назва фільму а не команду.');
+                await ctx.wizard.selectStep(1);
+                break;
+            case 'Other':
+                ctx.reply('Це не назва фільму, введіть будь ласка назву фільму');
+                await ctx.wizard.selectStep(1);
+            default:
+                break;
         }
     });
 
     const changeToNewVote = Telegraf.on('message', async (ctx) => {
         try {
             if (/^([1-9]|10)$/.test(ctx.message.text)) {
-                profile.user.movies[filmNumber].vote = ctx.message.text;
+                profile.user.movies[ctx.scene.state.filmNumber].vote = ctx.message.text;
                 
                 await profile.user.save();
                 ctx.reply('Фільм успішно оновлено у вашому списку!');
-    
-                ctx.scene.leave();
+                return ctx.scene.leave();
             } else {
-                await ctx.reply('Оцініть даний фільм цифрами від 1 до 10');
+                await ctx.reply('Потрібно оцінити фільм цифрами від 1 до 10!');
                 await ctx.wizard.selectStep(2);
             }
-
-            
+          
         } catch (error) {
             console.error(error);
         }
