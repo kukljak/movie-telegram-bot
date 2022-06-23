@@ -82,7 +82,7 @@ bot.action('showViewedMovies', async (ctx) => {
         
         const { user } = await Profiles.findById(profile_id).populate('user');
         let moviesList = '';
-        if (user.wantedMovies.length === 0) {
+        if (user.movies.length === 0) {
             return ctx.reply('Ви ще не додали жодного фільму в переглянуті');
         }
         user.movies.map( (film,index) => {
