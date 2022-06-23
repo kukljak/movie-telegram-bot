@@ -20,6 +20,7 @@ const recordWantedFilm = () => {
                     });
                     await profile.user.save();
                     await ctx.reply('Фільм успішно доданий в список бажаних');
+                    await ctx.scene.leave();
                     break;
                 case 'goOutScene':
                     await ctx.scene.leave();
