@@ -182,7 +182,7 @@ bot.action('editWanted', async (ctx) => {
 });
 
 bot.command('help', async (ctx) => {
-    ctx.reply("With this bot you can do a lot! \n\n start - Start bot\nedit - Edit movie from choosed list\ndelete - Delete movie from choosed list\ngo0ut - Go out from action\nhelp - Show all bot's opportunities");
+    ctx.reply("With this bot you can do a lot! \n\n/start - Start bot\n/edit - Edit movie from choosed list\n/delete - Delete movie from choosed list\n/go0ut - Go out from action\n/help - Show all bot's opportunities");
 })
 
 bot.launch();
