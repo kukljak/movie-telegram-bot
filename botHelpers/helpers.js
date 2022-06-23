@@ -21,6 +21,8 @@ const checkCtxType = (ctx, films = undefined ) => {
         return 'number';
     } else if (films && Number(ctx.message.text) > films.length || ctx.message.text === '0') {
         return 'notExistNumber';
+    } else if (ctx.message.text && ctx.message.text === '/go0ut') {
+        return 'goOutScene';
     } else if (ctx.message.text && ctx.message.text[0] === '/') {
         return 'command';
     } else if (ctx.message.text && !regexOnlyEmoji.test(ctx.message.text)) {

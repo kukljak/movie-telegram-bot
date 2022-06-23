@@ -2,7 +2,7 @@ const { Scenes, Telegraf } = require("telegraf");
 const { checkCtxType } = require("../botHelpers/helpers");
 const Profiles = require("../db/models/Profiles");
 
-const editViewedFilm = () => {
+const editWantedFilm = () => {
     let profile;
     let films;
     const takeMovieNumber = Telegraf.on('message', async (ctx) => {
@@ -10,7 +10,7 @@ const editViewedFilm = () => {
         let sceneState = ctx.scene.state;
         try {
             profile = await Profiles.findById(profile_id).populate('user');
-            films = await profile.user.movies;
+            films = await profile.user.wantedMovies;
 
             switch (checkCtxType(ctx, films)) {
                 case 'number':
@@ -53,9 +53,11 @@ const editViewedFilm = () => {
             case 'number':
             case 'notExistNumber':
             case 'text':
-                profile.user.movies[ctx.scene.state.filmNumber].name = ctx.message.text;
-                await ctx.reply('Оцініть даний фільм від 1 до 10');
-                await ctx.wizard.next();
+                profile.user.wantedMovies[ctx.scene.state.filmNumber].name = ctx.message.text;
+                
+                await profile.user.save();
+                ctx.reply('Фільм успішно оновлено у вашому списку!');
+                ctx.scene.leave();
                 break;
             case 'goOutScene':
                 await ctx.scene.leave();
@@ -73,29 +75,10 @@ const editViewedFilm = () => {
         }
     });
 
-    const changeToNewVote = Telegraf.on('message', async (ctx) => {
-        try {
-            if (/^([1-9]|10)$/.test(ctx.message.text)) {
-                profile.user.movies[ctx.scene.state.filmNumber].vote = ctx.message.text;
-                
-                await profile.user.save();
-                ctx.reply('Фільм успішно оновлено у вашому списку!');
-                return ctx.scene.leave();
-            } else {
-                await ctx.reply('Потрібно оцінити фільм цифрами від 1 до 10!');
-                await ctx.wizard.selectStep(2);
-            }
-          
-        } catch (error) {
-            console.error(error);
-        }
-    })
-
-
-    const currentScene = new Scenes.WizardScene('editViewedFilm', takeMovieNumber, changeToNewName, changeToNewVote);
+    const currentScene = new Scenes.WizardScene('editWantedFilm', takeMovieNumber, changeToNewName);
     currentScene.enter( ctx => ctx.reply('Введіть номер фільму який бажаєте відредагувати'));
 
     return currentScene;
 }
 
-module.exports = editViewedFilm();
+module.exports = editWantedFilm();

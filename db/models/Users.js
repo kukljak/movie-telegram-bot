@@ -36,6 +36,19 @@ const UserSchema = new mongoose.Schema({
                 type: Date
             }
         }
+    ],
+    wantedMovies: [
+        {
+            message_id: {
+                type: Number
+            },
+            name: {
+                type: String
+            },
+            timeAdd: {
+                type: Date
+            }
+        }
     ]
 });
 

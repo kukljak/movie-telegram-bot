@@ -3,20 +3,20 @@ const { checkCtxType } = require("../botHelpers/helpers");
 const Profiles = require("../db/models/Profiles");
 
 
-const deleteViewedFilm = () => {
+const deleteWantedFilm = () => {
 
     const deleteFilm = Telegraf.on('message', async (ctx) => {
 
         const profile_id = ctx.scene.state?.profile_id;
         try {
             const profile = await Profiles.findById(profile_id).populate('user');
-            let films = await profile.user.movies;
+            let films = await profile.user.wantedMovies;
 
             switch (checkCtxType(ctx, films)) {
                 case 'number':
                     const deletedFilm = films.find( (film, id) => id == ctx.message.text - 1);
                     films = films.filter( (film, id) => id !== ctx.message.text - 1 );
-                    profile.user.movies = films;
+                    profile.user.wantedMovies = films;
                     await profile.user.save(); 
 
                     ctx.replyWithHTML(`Фільм <b>'${deletedFilm.name}'</b> успішно видалено з вашого списку`)
@@ -47,10 +47,10 @@ const deleteViewedFilm = () => {
         }
     })
 
-    const currentScene = new Scenes.WizardScene('deleteViewedFilm', deleteFilm);
+    const currentScene = new Scenes.WizardScene('deleteWantedFilm', deleteFilm);
     currentScene.enter( ctx => ctx.reply('Введіть номер фільму який бажаєте видалити'));
 
     return currentScene;
 }
 
-module.exports = deleteViewedFilm();
+module.exports = deleteWantedFilm();

@@ -28,6 +28,10 @@ const recordViewedFilm = () => {
                     await ctx.reply('Оцініть даний фільм від 1 до 10');
                     ctx.wizard.next();
                     break;
+                case 'goOutScene':
+                    await ctx.scene.leave();
+                    await ctx.reply('Ви вийшли з додавання фільму');
+                    break;
                 case 'command':
                     await ctx.reply('Введіть назва фільму а не команду.');
                     await ctx.wizard.selectStep(0);
